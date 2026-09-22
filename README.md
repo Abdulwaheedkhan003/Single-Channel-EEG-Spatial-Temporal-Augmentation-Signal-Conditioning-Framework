@@ -1,0 +1,2 @@
+# Single-Channel-EEG-Spatial-Temporal-Augmentation-Signal-Conditioning-Framework
+**NeuroStream-DSP** is a single-channel EEG processing framework designed to ingest continuous single-lead neural recordings and perform spatial-temporal windowing. It features Google Drive cloud integration, sliding-window trial segmentation with 75% overlap, and raw temporal visualization to generate machine-learning-ready datasets.
