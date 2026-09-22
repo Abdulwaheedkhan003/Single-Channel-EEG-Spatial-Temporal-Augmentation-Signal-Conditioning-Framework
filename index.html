@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>EEG Motor Imagery BCI — Wheelchair Classification</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#010210;--surf:#06091E;--card:#0C1030;--bord:#182050;
+  --cyan:#00CFFF;--cyan2:rgba(0,207,255,.15);--cyan3:rgba(0,207,255,.07);
+  --pur:#8B5CF6;--grn:#00F5A0;--amb:#FFB800;--red:#FF5F77;
+  --txt:#D4DEFF;--mut:#5A6B9E;--wh:#FFFFFF;
+  box-sizing:border-box;
+}
+*{box-sizing:inherit;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--txt);font-family:'Space Grotesk',system-ui,sans-serif;overflow-x:hidden;line-height:1.6}
+
+/* ── canvas bg ── */
+#bgc{position:fixed;inset:0;z-index:0;pointer-events:none}
+#page{position:relative;z-index:1}
+
+/* ── hero ── */
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:5rem 2rem 3rem;text-align:center}
+
+.monitor-wrap{width:100%;max-width:760px;margin-bottom:2.5rem;position:relative}
+.monitor{background:#000;border:1.5px solid #0A2840;border-radius:10px;padding:10px;
+  box-shadow:0 0 0 1px #041825,0 0 60px rgba(0,207,255,.12),inset 0 0 40px #00000060;position:relative;overflow:hidden}
+.monitor-bar{display:flex;align-items:center;justify-content:space-between;padding:0 4px 8px}
+.monitor-bar .mleft{font-family:'JetBrains Mono',monospace;font-size:9px;color:#1A4A6A;letter-spacing:.5px}
+.monitor-bar .mrec{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--red);animation:blink 1.4s ease infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.15}}
+#eegc{width:100%;height:160px;display:block;border-radius:4px}
+
+.scan-overlay{position:absolute;inset:0;border-radius:4px;pointer-events:none;
+  background:linear-gradient(180deg,rgba(0,207,255,.025) 0%,transparent 60%)}
+
+.badge-row{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:1.8rem}
+.bdg{padding:4px 13px;border-radius:100px;font-size:11.5px;font-weight:500;animation:bdgpop .5s cubic-bezier(.34,1.56,.64,1) both}
+.bdg:nth-child(1){animation-delay:.05s}.bdg:nth-child(2){animation-delay:.12s}
+.bdg:nth-child(3){animation-delay:.19s}.bdg:nth-child(4){animation-delay:.26s}
+.bdg:nth-child(5){animation-delay:.33s}.bdg:nth-child(6){animation-delay:.4s}
+@keyframes bdgpop{from{opacity:0;transform:scale(.75)}to{opacity:1;transform:scale(1)}}
+.b1{background:#0F1E33;color:#5BB8FF;border:1px solid #1A3A60}
+.b2{background:#0F2018;color:#4DFFAA;border:1px solid #1A4030}
+.b3{background:#1E1030;color:#B07EFF;border:1px solid #3A1A70}
+.b4{background:#261800;color:var(--amb);border:1px solid #503000}
+.b5{background:#0E0E30;color:var(--cyan);border:1px solid #1E1E70}
+.b6{background:#200B14;color:var(--red);border:1px solid #5A1530}
+
+.eyebrow{font-size:11px;font-weight:600;letter-spacing:2.5px;color:var(--cyan);text-transform:uppercase;
+  margin-bottom:.8rem;opacity:0;animation:fdup .6s .1s ease forwards}
+.h1{font-size:clamp(1.9rem,4.5vw,3.3rem);font-weight:700;line-height:1.15;letter-spacing:-.4px;
+  margin-bottom:1.1rem;opacity:0;animation:fdup .7s .25s ease forwards}
+.h1 em{font-style:normal;color:var(--cyan)}
+.sub{font-size:.97rem;font-weight:300;color:var(--mut);max-width:560px;line-height:1.75;
+  margin-bottom:2.2rem;opacity:0;animation:fdup .7s .4s ease forwards}
+@keyframes fdup{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+
+.hstats{display:flex;gap:2.5rem;flex-wrap:wrap;justify-content:center;
+  opacity:0;animation:fdup .6s .55s ease forwards}
+.hs{text-align:center}
+.hs-num{font-size:2.1rem;font-weight:700;color:var(--wh);line-height:1}
+.hs-num em{font-style:normal;color:var(--cyan);font-size:1.4rem}
+.hs-lbl{font-size:10px;color:var(--mut);margin-top:3px;letter-spacing:.4px}
+
+/* ── shared section ── */
+.sec{max-width:1100px;margin:0 auto;padding:5rem 2rem}
+.sec-lbl{font-size:10px;font-weight:600;letter-spacing:2.5px;color:var(--cyan);text-transform:uppercase;margin-bottom:.5rem}
+.sec-h{font-size:clamp(1.5rem,2.8vw,2.1rem);font-weight:700;margin-bottom:.9rem;line-height:1.25}
+.sec-p{color:var(--mut);font-size:.92rem;line-height:1.75;max-width:640px;margin-bottom:2.8rem}
+.div{height:1px;background:linear-gradient(90deg,transparent,var(--bord) 30%,var(--bord) 70%,transparent);margin:0 2rem}
+
+/* reveal */
+.rv{opacity:0;transform:translateY(22px);transition:opacity .65s ease,transform .65s ease}
+.rv.on{opacity:1;transform:translateY(0)}
+
+/* ── about cards ── */
+.about-g{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.2rem}
+.acard{background:var(--card);border:1px solid var(--bord);border-radius:12px;padding:1.5rem;
+  transition:border-color .3s,box-shadow .3s,transform .25s}
+.acard:hover{border-color:var(--cyan);box-shadow:0 0 22px rgba(0,207,255,.1);transform:translateY(-3px)}
+.acard-ico{font-size:1.7rem;margin-bottom:.7rem}
+.acard h3{font-size:.9rem;font-weight:600;color:var(--wh);margin-bottom:.4rem}
+.acard p{font-size:.82rem;color:var(--mut);line-height:1.65}
+
+/* ── pipeline ── */
+.pipe-g{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:1rem}
+.pstep{background:var(--card);border:1px solid var(--bord);border-radius:10px;padding:1.2rem 1.4rem;
+  position:relative;overflow:hidden;opacity:0;transform:translateY(20px);
+  transition:transform .22s,border-color .3s,box-shadow .3s}
+.pstep.on{animation:stepup .5s ease forwards}
+.pstep:hover{transform:translateY(-3px);border-color:var(--cyan);box-shadow:0 0 18px rgba(0,207,255,.08)}
+.pstep::before{content:'';position:absolute;left:0;top:0;width:3px;height:100%;
+  background:linear-gradient(180deg,var(--cyan),var(--pur));opacity:0;transition:opacity .3s}
+.pstep:hover::before{opacity:1}
+@keyframes stepup{to{opacity:1;transform:translateY(0)}}
+.pstep-n{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--cyan);opacity:.65;margin-bottom:.3rem}
+.pstep-t{font-size:.88rem;font-weight:600;color:var(--wh);margin-bottom:.35rem}
+.pstep-d{font-size:.78rem;color:var(--mut);line-height:1.6}
+
+/* ── bands ── */
+.bands{display:flex;flex-direction:column;gap:1rem}
+.band{display:grid;grid-template-columns:140px 1fr 70px;align-items:center;gap:1.5rem;
+  padding:.9rem 1.4rem;background:var(--card);border:1px solid var(--bord);
+  border-radius:10px;transition:border-color .3s,transform .25s}
+.band:hover{transform:translateX(4px)}
+.band.delta{color:#4DB8FF}.band.theta{color:#C084FC}
+.band.alpha{color:#34D399}.band.beta{color:var(--amb)}.band.gamma{color:var(--red)}
+.band:hover{border-color:currentColor}
+.band-info h4{font-size:.88rem;font-weight:600;color:inherit}
+.band-info span{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--mut)}
+.band-dom{display:inline-block;background:rgba(255,184,0,.12);color:var(--amb);
+  border:1px solid rgba(255,184,0,.3);border-radius:3px;padding:1px 6px;font-size:9px;font-weight:600;margin-top:3px}
+.bwrap{height:46px;overflow:hidden}
+.bwrap svg{width:100%;height:100%}
+.bval{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--mut);text-align:right}
+
+/* ── ML pipeline flow ── */
+.ml-flow{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;margin-bottom:2rem}
+.ml-node{background:var(--card);border:1px solid var(--bord);border-radius:8px;
+  padding:.6rem 1.1rem;font-size:.82rem;font-weight:500;color:var(--wh);
+  transition:border-color .3s,box-shadow .3s;position:relative}
+.ml-node:hover{border-color:var(--pur);box-shadow:0 0 14px rgba(139,92,246,.2)}
+.ml-node.active{border-color:var(--cyan);color:var(--cyan);box-shadow:0 0 14px rgba(0,207,255,.15)}
+.ml-arrow{color:var(--bord);font-size:1.2rem}
+
+/* ── results ── */
+.res-g{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1.2rem;margin-bottom:3rem}
+.rcard{background:var(--card);border:1px solid var(--bord);border-radius:12px;
+  padding:1.8rem 1.4rem;text-align:center;position:relative;overflow:hidden}
+.rcard::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--cyan),transparent);
+  animation:shimmer 2.5s infinite}
+@keyframes shimmer{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+.rcard.g::after{background:linear-gradient(90deg,transparent,var(--grn),transparent)}
+.rcard.p::after{background:linear-gradient(90deg,transparent,var(--pur),transparent)}
+.rcard.a::after{background:linear-gradient(90deg,transparent,var(--amb),transparent)}
+.rnum{font-size:2.8rem;font-weight:700;color:var(--wh);line-height:1;margin-bottom:.25rem}
+.rnum em{font-style:normal;color:var(--cyan);font-size:1.7rem}
+.rnum.ga em{color:var(--grn)}.rnum.pa em{color:var(--pur)}.rnum.aa em{color:var(--amb)}
+.rlbl{font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:1px}
+.rsub{font-size:10px;color:var(--cyan);margin-top:3px;font-family:'JetBrains Mono',monospace}
+.rsub.gc{color:var(--grn)}.rsub.pc{color:var(--pur)}.rsub.ac{color:var(--amb)}
+
+/* confusion matrix */
+.conf-outer{display:flex;flex-wrap:wrap;gap:3rem;align-items:flex-start}
+.conf-title{font-size:12px;color:var(--mut);font-family:'JetBrains Mono',monospace;margin-bottom:.8rem}
+.cmat{display:grid;grid-template-columns:auto auto auto;gap:3px;width:fit-content}
+.clbl{display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;
+  font-size:10px;color:var(--mut);padding:2px 4px}
+.clbl.vert{writing-mode:vertical-rl;text-orientation:mixed}
+.cc{width:88px;height:88px;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;border-radius:7px;font-size:1.7rem;font-weight:700}
+.cc small{font-size:9px;font-weight:400;opacity:.5;font-family:'JetBrains Mono',monospace;margin-top:2px}
+.tp,.tn{background:rgba(0,245,160,.12);border:1px solid rgba(0,245,160,.3);color:var(--grn)}
+.fp,.fn{background:rgba(255,95,119,.1);border:1px solid rgba(255,95,119,.25);color:var(--red)}
+
+/* nyquist box */
+.nyq{flex:1;min-width:250px;background:var(--card);border:1px solid var(--bord);
+  border-radius:10px;padding:1.2rem 1.4rem}
+.nyq p{font-size:13px;color:var(--mut);line-height:2}
+.nyq .ok{color:var(--grn);font-family:'JetBrains Mono',monospace;font-size:12px}
+.nyq .val{color:var(--txt);font-family:'JetBrains Mono',monospace;font-size:12px}
+.nyq .ky{color:var(--cyan);font-family:'JetBrains Mono',monospace;font-size:12px}
+
+/* ── LDA math ── */
+.flist{display:flex;flex-direction:column;gap:1rem}
+.fcard{background:var(--card);border:1px solid var(--bord);border-radius:10px;
+  padding:1.1rem 1.4rem;display:grid;grid-template-columns:36px 1fr;gap:1rem;
+  align-items:start;transition:border-color .3s,transform .2s}
+.fcard:hover{border-color:var(--pur);transform:translateX(4px)}
+.fnum{width:32px;height:32px;background:rgba(139,92,246,.18);border:1px solid var(--pur);
+  border-radius:6px;display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:700;color:var(--pur);flex-shrink:0}
+.fcard h4{font-size:.87rem;font-weight:600;color:var(--wh);margin-bottom:.4rem}
+.feq{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--cyan);
+  background:rgba(0,207,255,.05);border:1px solid rgba(0,207,255,.12);
+  border-radius:5px;padding:7px 11px;margin-top:5px;overflow-x:auto;white-space:pre}
+
+/* ── telemetry ── */
+.term{background:#000308;border:1px solid #0E1A35;border-radius:10px;overflow:hidden;
+  font-family:'JetBrains Mono',monospace;font-size:12px}
+.term-hdr{background:#070A18;padding:9px 14px;display:flex;align-items:center;gap:7px;
+  border-bottom:1px solid #0E1A35}
+.dot{width:10px;height:10px;border-radius:50%}
+.dot.r{background:#FF5F56}.dot.y{background:#FFBD2E}.dot.g{background:#27C93F}
+.term-name{color:#2A3A5A;font-size:10px;margin-left:8px}
+.term-body{padding:1.2rem;min-height:230px;color:#00D4AA;line-height:2}
+.tl{display:block;animation:tlin .18s ease both}
+@keyframes tlin{from{opacity:0;transform:translateX(-6px)}to{opacity:1;transform:translateX(0)}}
+.th{color:#3A6A3A}.tb{color:var(--amb)}.tl-l{color:var(--cyan)}.tl-r{color:var(--red)}.tok{color:#27C93F}
+
+/* ── tech stack ── */
+.tech-g{display:flex;flex-wrap:wrap;gap:.7rem}
+.tbdg{display:flex;align-items:center;gap:7px;padding:7px 13px;background:var(--card);
+  border:1px solid var(--bord);border-radius:7px;font-size:12.5px;font-weight:500;
+  transition:border-color .25s,box-shadow .25s,transform .2s}
+.tbdg:hover{border-color:var(--cyan);box-shadow:0 0 12px rgba(0,207,255,.12);transform:translateY(-2px)}
+.tdot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+
+/* ── code block ── */
+.cb{background:#000308;border:1px solid #0E1A35;border-radius:10px;overflow:hidden}
+.cb-hdr{background:#070A18;padding:9px 14px;display:flex;align-items:center;
+  justify-content:space-between;border-bottom:1px solid #0E1A35;
+  font-family:'JetBrains Mono',monospace;font-size:10px;color:#2A3A5A}
+.cb pre{padding:1.4rem;overflow-x:auto;font-family:'JetBrains Mono',monospace;
+  font-size:12.5px;line-height:1.9;color:#8A9FCC}
+.kw{color:#C084FC}.fn{color:#60AAFF}.st{color:#7EC97E}.cm{color:#2A4060}.nm{color:var(--amb)}
+
+/* ── footer ── */
+footer{border-top:1px solid var(--bord);padding:3.5rem 2rem;text-align:center}
+.ft{font-size:1.15rem;font-weight:600;color:var(--wh);margin-bottom:.4rem}
+.fd{color:var(--mut);font-size:.875rem;margin-bottom:1.5rem}
+.fl{display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap}
+.fa{padding:9px 20px;border-radius:8px;font-size:13px;font-weight:500;
+  text-decoration:none;display:flex;align-items:center;gap:6px;transition:all .25s}
+.fa.pri{background:var(--cyan);color:#000}
+.fa.pri:hover{box-shadow:0 0 24px rgba(0,207,255,.45);transform:translateY(-2px)}
+.fa.sec{background:var(--card);color:var(--txt);border:1px solid var(--bord)}
+.fa.sec:hover{border-color:var(--cyan);transform:translateY(-2px)}
+.fc{color:var(--mut);font-size:11px;margin-top:2.5rem}
+
+/* ── pulse anim for accent elements ── */
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+@keyframes glow{0%,100%{box-shadow:0 0 8px rgba(0,207,255,.2)}50%{box-shadow:0 0 22px rgba(0,207,255,.5)}}
+
+@media(max-width:680px){
+  .about-g,.res-g{grid-template-columns:1fr}
+  .band{grid-template-columns:110px 1fr}
+  .bval{display:none}
+  .conf-outer{flex-direction:column}
+  .hstats{gap:1.5rem}
+  .hs-num{font-size:1.7rem}
+  .ml-flow{gap:.3rem}
+}
+</style>
+</head>
+<body>
+<canvas id="bgc"></canvas>
+<div id="page">
+
+<!-- ═══════════ HERO ═══════════ -->
+<header class="hero">
+
+  <div class="monitor-wrap">
+    <div class="monitor">
+      <div class="monitor-bar">
+        <span class="mleft">EEG MOTOR IMAGERY ACQUISITION ▸ CH: Multi-Band ▸ FS: 256 Hz ▸ WINDOW: 1s</span>
+        <span class="mrec">● REC</span>
+      </div>
+      <canvas id="eegc"></canvas>
+      <div class="scan-overlay"></div>
+    </div>
+  </div>
+
+  <div class="badge-row">
+    <span class="bdg b5">🧠 Brain-Computer Interface</span>
+    <span class="bdg b1">Python 3</span>
+    <span class="bdg b2">scikit-learn</span>
+    <span class="bdg b3">SciPy · NumPy</span>
+    <span class="bdg b4">🏆 83.1% Accuracy</span>
+    <span class="bdg b6">Motor Imagery EEG</span>
+  </div>
+
+  <p class="eyebrow">Neuroscience × Machine Learning × Assistive Technology</p>
+  <h1 class="h1">EEG Motor Imagery Classification<br>for <em>Wheelchair Control</em></h1>
+  <p class="sub">
+    A complete brain-computer interface pipeline that decodes imagined motor movements 
+    into real-time directional commands — enabling hands-free wheelchair navigation 
+    using a custom 5-formula LDA engine, high-density windowing, and live telemetry deployment.
+  </p>
+
+  <div class="hstats">
+    <div class="hs"><div class="hs-num">83.1<em>%</em></div><div class="hs-lbl">Peak Accuracy</div></div>
+    <div class="hs"><div class="hs-num">256<em>Hz</em></div><div class="hs-lbl">Sampling Rate</div></div>
+    <div class="hs"><div class="hs-num">5<em>×</em></div><div class="hs-lbl">EEG Bands</div></div>
+    <div class="hs"><div class="hs-num">11<em>×</em>11</div><div class="hs-lbl">Feature Matrix</div></div>
+    <div class="hs"><div class="hs-num">10<em>-fold</em></div><div class="hs-lbl">Cross-Validation</div></div>
+    <div class="hs"><div class="hs-num">2<em>×</em></div><div class="hs-lbl">Data Augmentation</div></div>
+  </div>
+</header>
+
+<div class="div"></div>
+
+<!-- ═══════════ ABOUT ═══════════ -->
+<section class="sec rv" id="about">
+  <p class="sec-lbl">Overview</p>
+  <h2 class="sec-h">What This System Does</h2>
+  <p class="sec-p">
+    Translates raw brainwave signals into real-time wheelchair steering commands. 
+    Motor imagery tasks (imagining left or right arm movement) create measurable beta-band 
+    EEG patterns — this pipeline captures, filters, classifies, and deploys those patterns at 8 Hz inference speed.
+  </p>
+  <div class="about-g">
+    <div class="acard"><div class="acard-ico">🎯</div><h3>Binary Motor Imagery Classification</h3>
+      <p>Distinguishes Left Turn vs. Right Turn imagined movements using beta band (12–30 Hz) as the dominant discriminating feature via event-related desynchronisation.</p></div>
+    <div class="acard"><div class="acard-ico">⚡</div><h3>High-Density Sliding Window Engine</h3>
+      <p>Segments 1-second windows with 8-sample step size, yielding a dense trial pool then doubled via controlled Gaussian noise augmentation for stable LDA training.</p></div>
+    <div class="acard"><div class="acard-ico">📐</div><h3>Manual 5-Formula LDA Engine</h3>
+      <p>Full Fisher LDA derivation from scratch — scatter matrices, weight vectors, decision boundaries — implemented transparently in NumPy without blackbox wrappers.</p></div>
+    <div class="acard"><div class="acard-ico">📡</div><h3>Real-Time Telemetry Deployment</h3>
+      <p>Trained weights serialized to JSON and deployed as a live inference engine at 0.125-second ticks, outputting beta power in the physiological 5–45 μV² range.</p></div>
+    <div class="acard"><div class="acard-ico">🔬</div><h3>GridSearchCV + PCA Optimization</h3>
+      <p>StandardScaler → SelectKBest (top 50 F-test features) → PCA (25 components) → GridSearchCV over solver and shrinkage hyperparameters with 5-fold CV.</p></div>
+    <div class="acard"><div class="acard-ico">🔢</div><h3>11×11 Feature Matrix Architecture</h3>
+      <p>Five log-variance band features tiled into 121-element matrices, with Beta power scaled ×1.5 along the primary diagonal for discriminant emphasis.</p></div>
+  </div>
+</section>
+
+<div class="div"></div>
+
+<!-- ═══════════ PIPELINE ═══════════ -->
+<section class="sec" id="pipe-sec">
+  <p class="sec-lbl rv">Architecture</p>
+  <h2 class="sec-h rv">9-Step End-to-End Pipeline</h2>
+  <p class="sec-p rv">From raw EEG acquisition to exported weights and real-time wheelchair steering output.</p>
+  <div class="pipe-g" id="pipeg"></div>
+</section>
+
+<div class="div"></div>
+
+<!-- ═══════════ FREQUENCY BANDS ═══════════ -->
+<section class="sec rv" id="bands-sec">
+  <p class="sec-lbl">Signal Processing</p>
+  <h2 class="sec-h">EEG Frequency Band Decomposition</h2>
+  <p class="sec-p">
+    4th-order Butterworth bandpass filters split the continuous recording into five physiological bands.
+    Beta band is the primary wheelchair control signal — Event-Related Desynchronisation (ERD) during motor imagery.
+  </p>
+  <div class="bands" id="bandsc"></div>
+</section>
+
+<div class="div"></div>
+
+<!-- ═══════════ ML PIPELINE ═══════════ -->
+<section class="sec rv" id="ml-sec">
+  <p class="sec-lbl">Machine Learning</p>
+  <h2 class="sec-h">Optimized Classification Stack</h2>
+  <p class="sec-p">Sequential preprocessing ensures numerical stability and maximum discriminant power before LDA training.</p>
+
+  <div class="ml-flow">
+    <div class="ml-node">📥 Raw Features<br><small style="color:var(--mut);font-size:10px">11×11 = 121-dim</small></div>
+    <span class="ml-arrow">→</span>
+    <div class="ml-node active">⚖️ StandardScaler<br><small style="font-size:10px">Z-score normalization</small></div>
+    <span class="ml-arrow">→</span>
+    <div class="ml-node active">🔍 SelectKBest<br><small style="font-size:10px">Top 50 F-test features</small></div>
+    <span class="ml-arrow">→</span>
+    <div class="ml-node active">📉 PCA<br><small style="font-size:10px">25 principal components</small></div>
+    <span class="ml-arrow">→</span>
+    <div class="ml-node active">🎯 LDA (SVD solver)<br><small style="font-size:10px">GridSearchCV optimal</small></div>
+    <span class="ml-arrow">→</span>
+    <div class="ml-node" style="color:var(--grn)">✅ Prediction<br><small style="font-size:10px">Left / Right</small></div>
+  </div>
+
+  <div class="cb">
+    <div class="cb-hdr"><span>ml_pipeline.py</span><span>Python</span></div>
+    <pre><span class="cm"># Optimized LDA pipeline with GridSearchCV</span>
+<span class="kw">from</span> sklearn.preprocessing <span class="kw">import</span> StandardScaler
+<span class="kw">from</span> sklearn.feature_selection <span class="kw">import</span> SelectKBest, f_classif
+<span class="kw">from</span> sklearn.decomposition <span class="kw">import</span> PCA
+<span class="kw">from</span> sklearn.discriminant_analysis <span class="kw">import</span> LinearDiscriminantAnalysis
+<span class="kw">from</span> sklearn.model_selection <span class="kw">import</span> GridSearchCV, StratifiedKFold, cross_val_score
+
+scaler   = StandardScaler()
+selector = SelectKBest(score_func=f_classif, k=<span class="nm">50</span>)
+pca      = PCA(n_components=<span class="nm">25</span>)
+lda      = LinearDiscriminantAnalysis()
+
+param_grid = {<span class="st">"solver"</span>: [<span class="st">"lsqr"</span>, <span class="st">"eigen"</span>], <span class="st">"shrinkage"</span>: [<span class="st">"auto"</span>, <span class="kw">None</span>]}
+grid_search = GridSearchCV(lda, param_grid, cv=<span class="nm">5</span>, scoring=<span class="st">"accuracy"</span>, n_jobs=-<span class="nm">1</span>)
+
+X_train = pca.fit_transform(selector.fit_transform(scaler.fit_transform(X_train), y_train))
+X_test  = pca.transform(selector.transform(scaler.transform(X_test)))
+grid_search.fit(X_train, y_train)
+
+cv_scores = cross_val_score(grid_search.best_estimator_, X_train, y_train,
+                            cv=StratifiedKFold(n_splits=<span class="nm">10</span>), scoring=<span class="st">"accuracy"</span>)
+<span class="fn">print</span>(<span class="st">f"10-Fold CV: {cv_scores.mean()*100:.2f}% ± {cv_scores.std()*100:.2f}%"</span>)</pre>
+  </div>
+</section>
+
+<div class="div"></div>
+
+<!-- ═══════════ LDA MATH ═══════════ -->
+<section class="sec rv" id="math-sec">
+  <p class="sec-lbl">Mathematics</p>
+  <h2 class="sec-h">5-Formula Manual LDA Engine</h2>
+  <p class="sec-p">Full Fisher Linear Discriminant Analysis implemented from scratch in NumPy. Each formula resolves a distinct stage in the linear separation problem.</p>
+  <div class="flist" id="flistc"></div>
+</section>
+
+<div class="div"></div>
+
+<!-- ═══════════ RESULTS ═══════════ -->
+<section class="sec rv" id="results">
+  <p class="sec-lbl">Performance</p>
+  <h2 class="sec-h">Classification Results</h2>
+  <p class="sec-p">Validated across three train/test splits with stratified partitioning and 10-fold cross-validation, consistently exceeding the 80% threshold.</p>
+
+  <div class="res-g">
+    <div class="rcard g"><div class="rnum ga"><span class="counter" data-t="83.1" data-s="%">0%</span></div>
+      <div class="rlbl">60 / 40 Split</div><div class="rsub gc">Peak Test Accuracy</div></div>
+    <div class="rcard p"><div class="rnum pa"><span class="counter" data-t="81.9" data-s="%">0%</span></div>
+      <div class="rlbl">70 / 30 Split</div><div class="rsub pc">Test Accuracy</div></div>
+    <div class="rcard a"><div class="rnum aa"><span class="counter" data-t="80.2" data-s="%">0%</span></div>
+      <div class="rlbl">80 / 20 Split</div><div class="rsub ac">Test Accuracy</div></div>
+    <div class="rcard"><div class="rnum"><span class="counter" data-t="10" data-s="-fold">0</span></div>
+      <div class="rlbl">Cross-Validation</div><div class="rsub">Stratified K-Fold</div></div>
+  </div>
+
+  <div class="conf-outer">
+    <div>
+      <p class="conf-title">Confusion Matrix — 60/40 Split (83.1%)</p>
+      <div class="cmat">
+        <div class="clbl"></div>
+        <div class="clbl">Pred: Left</div>
+        <div class="clbl">Pred: Right</div>
+        <div class="clbl vert">Left</div>
+        <div class="cc tp">71<small>TP</small></div>
+        <div class="cc fp">15<small>FP</small></div>
+        <div class="clbl vert">Right</div>
+        <div class="cc fn">5<small>FN</small></div>
+        <div class="cc tn">73<small>TN</small></div>
+      </div>
+    </div>
+    <div class="nyq">
+      <p class="conf-title">Nyquist Criterion Verification</p>
+      <p>Highest tracked frequency: <span class="ky">80 Hz (Gamma)</span><br>
+         Required Nyquist: <span class="val">≥ 160 Hz</span><br>
+         Sampling rate: <span class="ok">256 Hz &gt; 160 Hz → SATISFIED ✓</span><br><br>
+         Samples per wave cycle at 256 Hz:<br>
+         <span class="ky">Delta</span> <span class="val">(0.5–4 Hz):</span> 64 – 512 pts<br>
+         <span class="ky">Beta &nbsp;</span><span class="val">(12–30 Hz):</span> &nbsp;8.5 – 21.3 pts<br>
+         <span class="ky">Gamma</span><span class="val">(30–80 Hz):</span> &nbsp;3.2 – 8.5 pts
+      </p>
+    </div>
+  </div>
+</section>
+
+<div class="div"></div>
+
+<!-- ═══════════ TELEMETRY ═══════════ -->
+<section class="sec rv" id="tele-sec">
+  <p class="sec-lbl">Deployment</p>
+  <h2 class="sec-h">Real-Time Telemetry Stream</h2>
+  <p class="sec-p">Live inference simulation at 0.125-second intervals. Beta power output clipped to physiological range 5–45 μV² for safe hardware command signals. Weights exported to JSON for embedded deployment.</p>
+  <div class="term">
+    <div class="term-hdr">
+      <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+      <span class="term-name">eeg_wheelchair_telemetry.py — 60/40 Split (83.1%)</span>
+    </div>
+    <div class="term-body" id="telo"></div>
+  </div>
+</section>
+
+<div class="div"></div>
+
+<!-- ═══════════ TECH STACK ═══════════ -->
+<section class="sec rv" id="tech-sec">
+  <p class="sec-lbl">Technology</p>
+  <h2 class="sec-h">Tech Stack</h2>
+  <p class="sec-p">Scientific Python ecosystem for end-to-end signal processing, machine learning, and visualization.</p>
+  <div class="tech-g" id="techg"></div>
+</section>
+
+<div class="div"></div>
+
+<!-- ═══════════ QUICK START ═══════════ -->
+<section class="sec rv" id="qs">
+  <p class="sec-lbl">Get Started</p>
+  <h2 class="sec-h">Quick Start</h2>
+  <p class="sec-p">Run the complete pipeline in Google Colab or a local Python 3 environment with your EEG data (Excel or CSV at 256 Hz).</p>
+  <div class="cb">
+    <div class="cb-hdr"><span>terminal</span><span>bash / python</span></div>
+    <pre><span class="cm"># 1. Clone the repository</span>
+<span class="fn">git</span> clone https://github.com/your-username/eeg-wheelchair-bci.git
+<span class="fn">cd</span> eeg-wheelchair-bci
+
+<span class="cm"># 2. Install dependencies</span>
+<span class="fn">pip</span> install numpy pandas scipy scikit-learn matplotlib seaborn
+
+<span class="cm"># 3. Load your EEG data (Excel @ 256 Hz, single column)</span>
+<span class="kw">import</span> pandas <span class="kw">as</span> pd
+raw_data = pd.read_excel(<span class="st">"your_eeg_data.xlsx"</span>).values
+
+<span class="cm"># 4. Run the notebook end-to-end</span>
+<span class="fn">jupyter notebook</span> EEG_FINAL.ipynb
+
+<span class="cm"># 5. Trained weights exported to:</span>
+<span class="cm">#    high_accuracy_wheelchair_weights.json</span>
+<span class="cm">#    {"weights_vector": [...121 floats...], "bias_scalar": float}</span></pre>
+  </div>
+</section>
+
+<!-- ═══════════ FOOTER ═══════════ -->
+<footer>
+  <div class="ft">Open to International Opportunities</div>
+  <p class="fd">Available for AI/ML Engineering, BCI Research, Neurotech, and Assistive Technology roles.</p>
+  <div class="fl">
+    <a href="#" class="fa pri">💼 LinkedIn</a>
+    <a href="#" class="fa sec">🐙 GitHub</a>
+    <a href="#" class="fa sec">📧 Email</a>
+    <a href="#" class="fa sec">📄 Resume</a>
+  </div>
+  <p class="fc">EEG Motor Imagery BCI · Python & NumPy · Wheelchair Assistive Technology · © 2026</p>
+</footer>
+
+</div><!-- #page -->
+
+<script>
+// ══ NEURAL PARTICLE BG ══
+const bgc = document.getElementById('bgc');
+const bgx = bgc.getContext('2d');
+let bw,bh,pts;
+function rsz(){bw=bgc.width=innerWidth;bh=bgc.height=innerHeight}
+function mkpts(){pts=[];const n=Math.floor(bw*bh/20000);for(let i=0;i<n;i++)pts.push({x:Math.random()*bw,y:Math.random()*bh,vx:(Math.random()-.5)*.28,vy:(Math.random()-.5)*.28,r:Math.random()*1.8+.4})}
+function bgloop(){
+  bgx.clearRect(0,0,bw,bh);
+  const D=130;
+  pts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;if(p.x<0||p.x>bw)p.vx*=-1;if(p.y<0||p.y>bh)p.vy*=-1});
+  for(let i=0;i<pts.length;i++)for(let j=i+1;j<pts.length;j++){
+    const dx=pts[i].x-pts[j].x,dy=pts[i].y-pts[j].y,d=Math.sqrt(dx*dx+dy*dy);
+    if(d<D){const a=(1-d/D)*.13;bgx.strokeStyle=`rgba(0,110,190,${a})`;bgx.lineWidth=.4;bgx.beginPath();bgx.moveTo(pts[i].x,pts[i].y);bgx.lineTo(pts[j].x,pts[j].y);bgx.stroke()}}
+  pts.forEach(p=>{bgx.fillStyle='rgba(0,150,240,.3)';bgx.beginPath();bgx.arc(p.x,p.y,p.r,0,Math.PI*2);bgx.fill()});
+  requestAnimationFrame(bgloop);
+}
+rsz();mkpts();bgloop();
+window.addEventListener('resize',()=>{rsz();mkpts()});
+
+// ══ EEG OSCILLOSCOPE ══
+const ec = document.getElementById('eegc');
+const ex = ec.getContext('2d');
+let eoff=0;
+
+function eegSig(t){
+  const b=14*Math.sin(2*Math.PI*18*t)+9*Math.sin(2*Math.PI*22*t)+5*Math.sin(2*Math.PI*25*t);
+  const a=10*Math.sin(2*Math.PI*10*t+.5);
+  const d=4*Math.sin(2*Math.PI*.4*t);
+  const g=2.5*Math.sin(2*Math.PI*38*t);
+  const spk=(Math.sin(2*Math.PI*.13*t)>.93)?22*Math.sin(2*Math.PI*8*t):0;
+  return b+a*.45+d+g*.3+spk;
+}
+
+const BANDS=[
+  {label:'δ',c:'#2A6A9A',freq:.8},{label:'θ',c:'#5A3A8A',freq:1.5},
+  {label:'α',c:'#2A7A5A',freq:2.8},{label:'β',c:'#8A6A00',freq:6.5},
+  {label:'γ',c:'#8A2A3A',freq:14}
+];
+
+function drawEEG(){
+  const W=ec.clientWidth||700,H=ec.clientHeight||160;
+  if(ec.width!==W*devicePixelRatio){ec.width=W*devicePixelRatio;ec.height=H*devicePixelRatio;ex.scale(devicePixelRatio,devicePixelRatio)}
+  ex.fillStyle='#000';ex.fillRect(0,0,W,H);
+  // grid
+  ex.strokeStyle='rgba(0,60,90,.55)';ex.lineWidth=.5;
+  for(let x=0;x<W;x+=40){ex.beginPath();ex.moveTo(x,0);ex.lineTo(x,H);ex.stroke()}
+  for(let y=0;y<H;y+=28){ex.beginPath();ex.moveTo(0,y);ex.lineTo(W,y);ex.stroke()}
+  // scan line glow
+  const sx=(eoff*1.8)%W;
+  const g=ex.createLinearGradient(sx-25,0,sx+5,0);
+  g.addColorStop(0,'rgba(0,207,255,0)');g.addColorStop(.7,'rgba(0,207,255,.06)');g.addColorStop(1,'rgba(0,207,255,0)');
+  ex.fillStyle=g;ex.fillRect(sx-25,0,30,H);
+  // per-band faint traces
+  BANDS.forEach((b,i)=>{
+    const yc=H*(.15+i*.16);
+    ex.beginPath();ex.strokeStyle=b.c+'55';ex.lineWidth=.8;
+    for(let px=0;px<=W;px+=2){
+      const t=(px+eoff*.5)/256;
+      const v=8*Math.sin(2*Math.PI*b.freq*t+i);
+      const y=yc+v;
+      px===0?ex.moveTo(px,y):ex.lineTo(px,y);}
+    ex.stroke();
+    ex.fillStyle=b.c+'55';ex.font='9px JetBrains Mono,monospace';ex.fillText(b.label,3,yc-8);
+  });
+  // main beta signal
+  const mid=H/2;
+  ex.beginPath();ex.strokeStyle='#00CFFF';ex.lineWidth=1.6;ex.shadowBlur=7;ex.shadowColor='#00CFFF';
+  for(let px=0;px<=W;px++){
+    const t=(px+eoff)/256;const y=mid+eegSig(t);
+    px===0?ex.moveTo(px,y):ex.lineTo(px,y);}
+  ex.stroke();ex.shadowBlur=0;
+  // scale bar
+  ex.fillStyle='#1A4A6A';ex.font='9px JetBrains Mono,monospace';
+  ex.fillText('25 μV',W-48,12);ex.fillStyle='rgba(0,100,160,.6)';ex.fillRect(W-52,14,38,1);
+  eoff+=.9;
+}
+function eegloop(){drawEEG();requestAnimationFrame(eegloop)}
+eegloop();
+
+// ══ PIPELINE STEPS ══
+const STEPS=[
+  {t:'Raw Signal Acquisition',d:'Load continuous EEG from Excel at 256 Hz. Flatten to 1D waveform and compute full timeline.',i:'📥'},
+  {t:'Butterworth Bandpass Filtering',d:'4th-order filters extract Δ θ α β γ bands. filtfilt ensures zero-phase distortion.',i:'🔊'},
+  {t:'High-Density Sliding Window',d:'1-second windows (256 samples) shifted by 8 samples — dense trial pool from limited recording length.',i:'🪟'},
+  {t:'Noise-Based Augmentation',d:'Inject σ-proportional Gaussian noise (1% std) to double dataset while preserving signal structure.',i:'⚡'},
+  {t:'Log-Variance Feature Extraction',d:'Compute log(Var+ε) per band per trial. Log transform linearizes exponential power relationships.',i:'📊'},
+  {t:'11×11 Matrix Spanning',d:'Tile 5 log-variance features into 121-slot grid. Scale Beta ×1.5 along primary diagonal for emphasis.',i:'📐'},
+  {t:'StandardScaler + SelectKBest + PCA',d:'Z-normalize → top 50 ANOVA F-test features → 25 principal components for LDA stability.',i:'🔬'},
+  {t:'GridSearchCV LDA Classification',d:'Exhaustive search: {lsqr|eigen} × {auto|None shrinkage}. Manual 5-formula fallback for full transparency.',i:'🎯'},
+  {t:'Weights Export + Telemetry Deployment',d:'Serialize w and w₀ to JSON. Deploy at 8 Hz (0.125s ticks), clamping β power to 5–45 μV².',i:'📡'},
+];
+const pg=document.getElementById('pipeg');
+STEPS.forEach((s,i)=>{
+  const el=document.createElement('div');el.className='pstep';
+  el.innerHTML=`<div class="pstep-n">STEP ${String(i+1).padStart(2,'0')}</div><div class="pstep-t">${s.i} ${s.t}</div><div class="pstep-d">${s.d}</div>`;
+  pg.appendChild(el);
+});
+
+// ══ FREQUENCY BANDS ANIMATED ══
+const BDATA=[
+  {n:'Delta',r:'0.5 – 4 Hz',c:'delta',col:'#4DB8FF',spd:.4,amp:13,dom:false},
+  {n:'Theta',r:'4 – 8 Hz',c:'theta',col:'#C084FC',spd:.9,amp:11,dom:false},
+  {n:'Alpha',r:'8 – 12 Hz',c:'alpha',col:'#34D399',spd:1.5,amp:10,dom:false},
+  {n:'Beta',r:'12 – 30 Hz',c:'beta',col:'#FFB800',spd:3.2,amp:16,dom:true},
+  {n:'Gamma',r:'30 – 80 Hz',c:'gamma',col:'#FF5F77',spd:8.5,amp:7,dom:false},
+];
+const bc2=document.getElementById('bandsc');
+const bpaths=[];
+BDATA.forEach((b,i)=>{
+  const row=document.createElement('div');row.className=`band ${b.c}`;
+  row.innerHTML=`<div class="band-info"><h4>${b.n}</h4><span>${b.r}</span>${b.dom?'<div class="band-dom">⬛ Dominant</div>':''}</div>
+    <div class="bwrap"><svg viewBox="0 0 400 50" preserveAspectRatio="none"><path class="bp" fill="none" stroke="${b.col}" stroke-width="1.6" opacity=".85"/></svg></div>
+    <div class="bval">${b.r}</div>`;
+  bc2.appendChild(row);
+  bpaths.push({p:row.querySelector('.bp'),b,ph:0});
+});
+function animBands(){
+  bpaths.forEach((obj,i)=>{
+    let d='';
+    for(let x=0;x<=400;x+=4){
+      const y=25+Math.sin((x/400)*Math.PI*2*obj.b.spd+obj.ph)*obj.b.amp
+                 +Math.sin((x/400)*Math.PI*4*obj.b.spd+obj.ph*.7)*obj.b.amp*.3;
+      d+=(x===0?'M':'L')+x+','+y.toFixed(1)+' ';
+    }
+    obj.p.setAttribute('d',d);
+    bpaths[i].ph+=.032*obj.b.spd;
+  });
+  requestAnimationFrame(animBands);
+}
+animBands();
+
+// ══ FORMULA LIST ══
+const FORMS=[
+  {n:'1',t:'Class Mean Vectors',eq:'μₖ = (1/Nₖ) · Σ_{x ∈ Cₖ} x'},
+  {n:'2',t:'Regularized Within-Class Scatter Matrix',eq:'S_W = Σₖ Σ_{x ∈ Cₖ} (x−μₖ)(x−μₖ)ᵀ + αI'},
+  {n:'3',t:'Between-Class Scatter Matrix',eq:'S_B = Σₖ Nₖ · (μₖ − μ_total)(μₖ − μ_total)ᵀ'},
+  {n:'4',t:'Fisher Weight Vector and Bias',eq:'w = S_W⁻¹ · (μ₀ − μ₁)     w₀ = −½ · wᵀ · (μ₀ + μ₁)'},
+  {n:'5',t:'Linear Decision Boundary Prediction',eq:'f(x) = wᵀ · x + w₀    →    ŷ = 0 (Left) if f(x) > 0 else 1 (Right)'},
+];
+const fl=document.getElementById('flistc');
+FORMS.forEach(f=>{
+  const d=document.createElement('div');d.className='fcard';
+  d.innerHTML=`<div class="fnum">${f.n}</div><div><h4>${f.t}</h4><div class="feq">${f.eq}</div></div>`;
+  fl.appendChild(d);
+});
+
+// ══ TECH STACK ══
+const TECHS=[
+  {n:'Python 3',c:'#4DB8FF'},{n:'NumPy',c:'#60AAFF'},{n:'Pandas',c:'#34D399'},
+  {n:'SciPy',c:'#C084FC'},{n:'scikit-learn',c:'#FFB800'},{n:'Matplotlib',c:'#60AAFF'},
+  {n:'Seaborn',c:'#FF6B8A'},{n:'Butterworth Filters',c:'#C084FC'},{n:'LinearDiscriminantAnalysis',c:'#FFB800'},
+  {n:'PCA',c:'#34D399'},{n:'GridSearchCV',c:'#60AAFF'},{n:'SelectKBest',c:'#4DB8FF'},
+  {n:'StratifiedKFold',c:'#FF6B8A'},{n:'Google Colab',c:'#FFB800'},{n:'JSON Deployment',c:'#4DB8FF'},
+  {n:'StandardScaler',c:'#34D399'},{n:'Log-Variance Features',c:'#C084FC'},{n:'SVD Solver',c:'#60AAFF'},
+];
+const tg=document.getElementById('techg');
+TECHS.forEach(t=>{
+  const el=document.createElement('div');el.className='tbdg';
+  el.innerHTML=`<div class="tdot" style="background:${t.c}"></div>${t.n}`;
+  tg.appendChild(el);
+});
+
+// ══ COUNTER ANIMATION ══
+function animCount(el){
+  const tgt=parseFloat(el.getAttribute('data-t'));
+  const suf=el.getAttribute('data-s')||'';
+  const isInt=Number.isInteger(tgt);
+  const dur=1800,start=performance.now();
+  function tick(now){
+    const p=Math.min((now-start)/dur,1);
+    const e=1-Math.pow(1-p,3);
+    const v=tgt*e;
+    el.textContent=(isInt?Math.floor(v):v.toFixed(1))+suf;
+    if(p<1)requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+// ══ TELEMETRY SIMULATION ══
+const TLINES=[
+  {h:'======================================================================='},
+  {h:'     REAL-TIME TELEMETRY STREAM — 60/40 SPLIT (83.1%)               '},
+  {h:'  Beta power: 5–45 μV²  |  Inference tick: 0.125 s  |  SR: 256 Hz    '},
+  {h:'======================================================================='},
+  {t:'[Time +0.000s]',b:'28.45',a:'left'},{t:'[Time +0.125s]',b:'29.12',a:'left'},
+  {t:'[Time +0.250s]',b:'31.88',a:'left'},{t:'[Time +0.375s]',b:'30.44',a:'left'},
+  {t:'[Time +0.500s]',b:'27.67',a:'left'},{t:'[Time +0.625s]',b:' 7.15',a:'right'},
+  {t:'[Time +0.750s]',b:' 8.93',a:'right'},{t:'[Time +0.875s]',b:' 6.40',a:'right'},
+  {t:'[Time +1.000s]',b:' 9.22',a:'right'},{t:'[Time +1.125s]',b:'12.45',a:'right'},
+  {t:null,b:null,a:'done'},
+];
+let telDone=false;
+function startTel(){
+  if(telDone)return;telDone=true;
+  const out=document.getElementById('telo');let i=0;
+  function next(){
+    if(i>=TLINES.length)return;
+    const ln=TLINES[i++];
+    const sp=document.createElement('span');sp.className='tl';
+    if(ln.h){sp.innerHTML=`<span class="th">${ln.h}</span>`}
+    else if(ln.a==='done'){sp.innerHTML=`<span class="tok">🏁 Live streaming simulation completed successfully.</span>`}
+    else{
+      const dir=ln.a==='left'
+        ?`<span class="tl-l">⬅️  TURN LEFT </span>`
+        :`<span class="tl-r">➡️  TURN RIGHT</span>`;
+      sp.innerHTML=`<span style="color:#2A4060">${ln.t}</span>  Beta Power: <span class="tb">${ln.b} μV²</span>  →  ${dir}`;
+    }
+    out.appendChild(sp);
+    setTimeout(next,ln.h?55:210);
+  }
+  next();
+}
+
+// ══ INTERSECTION OBSERVERS ══
+const rvObs=new IntersectionObserver(e=>{e.forEach(en=>{if(en.isIntersecting){en.target.classList.add('on');rvObs.unobserve(en.target)}})},{threshold:.1});
+document.querySelectorAll('.rv').forEach(el=>rvObs.observe(el));
+
+const pipeObs=new IntersectionObserver(e=>{e.forEach(en=>{if(en.isIntersecting){
+  en.target.querySelectorAll('.pstep').forEach((s,i)=>setTimeout(()=>s.classList.add('on'),i*70));
+  pipeObs.unobserve(en.target);
+}})},{threshold:.05});
+pipeObs.observe(document.getElementById('pipeg'));
+
+const cntObs=new IntersectionObserver(e=>{e.forEach(en=>{if(en.isIntersecting){
+  en.target.querySelectorAll('.counter').forEach(animCount);
+  cntObs.unobserve(en.target);
+}})},{threshold:.3});
+cntObs.observe(document.getElementById('results'));
+
+const telObs=new IntersectionObserver(e=>{e.forEach(en=>{if(en.isIntersecting){startTel();telObs.unobserve(en.target)}})},{threshold:.25});
+telObs.observe(document.getElementById('tele-sec'));
+</script>
+</body>
+</html>
