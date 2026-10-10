@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 466" width="880" height="466" role="img" aria-label="9-step pipeline: acquisition, bandpass filtering, sliding window, augmentation, log-variance features, 11x11 matrix, scaling/selection/PCA, LDA classification, weights export and telemetry">
+<title>9-step pipeline: acquisition, bandpass filtering, sliding window, augmentation, log-variance features, 11x11 matrix, scaling/selection/PCA, LDA classification, weights export and telemetry</title>
+<style>.s{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif}.m{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+.hl{opacity:0;animation:hl 9s linear infinite}
+@keyframes hl{0%{opacity:0}2%{opacity:1}11%{opacity:1}14%{opacity:0}100%{opacity:0}}</style>
+<defs><linearGradient id="acc" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#00CFFF"/><stop offset="1" stop-color="#8B5CF6"/></linearGradient></defs>
+<rect width="880" height="466" rx="14" fill="#010210"/>
+<rect x="25" y="25" width="270" height="132" rx="10" fill="#0C1030" stroke="#182050"/>
+<g class="hl" style="animation-delay:0s"><rect x="25" y="25" width="270" height="132" rx="10" fill="#00CFFF" fill-opacity=".05" stroke="#00CFFF"/><rect x="25" y="35" width="3" height="112" fill="url(#acc)"/></g>
+<text class="m" x="43" y="49" font-size="10.5" fill="#00CFFF" fill-opacity=".8">STEP 01</text>
+<text class="s" x="43" y="71" font-size="13.5" font-weight="600" fill="#FFFFFF">Raw Signal Acquisition</text><text class="s" x="43" y="91" font-size="11.5" fill="#7A8BBE">Load continuous EEG from Excel at 256 Hz.</text><text class="s" x="43" y="107" font-size="11.5" fill="#7A8BBE">Flatten to 1D waveform and compute full</text><text class="s" x="43" y="123" font-size="11.5" fill="#7A8BBE">timeline.</text>
+<rect x="305" y="25" width="270" height="132" rx="10" fill="#0C1030" stroke="#182050"/>
+<g class="hl" style="animation-delay:1s"><rect x="305" y="25" width="270" height="132" rx="10" fill="#00CFFF" fill-opacity=".05" stroke="#00CFFF"/><rect x="305" y="35" width="3" height="112" fill="url(#acc)"/></g>
+<text class="m" x="323" y="49" font-size="10.5" fill="#00CFFF" fill-opacity=".8">STEP 02</text>
+<text class="s" x="323" y="71" font-size="13.5" font-weight="600" fill="#FFFFFF">Butterworth Bandpass Filtering</text><text class="s" x="323" y="91" font-size="11.5" fill="#7A8BBE">4th-order filters extract Δ θ α β γ bands.</text><text class="s" x="323" y="107" font-size="11.5" fill="#7A8BBE">filtfilt ensures zero-phase distortion.</text>
+<rect x="585" y="25" width="270" height="132" rx="10" fill="#0C1030" stroke="#182050"/>
+<g class="hl" style="animation-delay:2s"><rect x="585" y="25" width="270" height="132" rx="10" fill="#00CFFF" fill-opacity=".05" stroke="#00CFFF"/><rect x="585" y="35" width="3" height="112" fill="url(#acc)"/></g>
+<text class="m" x="603" y="49" font-size="10.5" fill="#00CFFF" fill-opacity=".8">STEP 03</text>
+<text class="s" x="603" y="71" font-size="13.5" font-weight="600" fill="#FFFFFF">High-Density Sliding Window</text><text class="s" x="603" y="91" font-size="11.5" fill="#7A8BBE">1-second windows (256 samples) shifted by</text><text class="s" x="603" y="107" font-size="11.5" fill="#7A8BBE">8 samples — dense trial pool from limited</text><text class="s" x="603" y="123" font-size="11.5" fill="#7A8BBE">recording length.</text>
+<rect x="25" y="167" width="270" height="132" rx="10" fill="#0C1030" stroke="#182050"/>
+<g class="hl" style="animation-delay:3s"><rect x="25" y="167" width="270" height="132" rx="10" fill="#00CFFF" fill-opacity=".05" stroke="#00CFFF"/><rect x="25" y="177" width="3" height="112" fill="url(#acc)"/></g>
+<text class="m" x="43" y="191" font-size="10.5" fill="#00CFFF" fill-opacity=".8">STEP 04</text>
+<text class="s" x="43" y="213" font-size="13.5" font-weight="600" fill="#FFFFFF">Noise-Based Augmentation</text><text class="s" x="43" y="233" font-size="11.5" fill="#7A8BBE">Inject σ-proportional Gaussian noise (1%</text><text class="s" x="43" y="249" font-size="11.5" fill="#7A8BBE">std) to double dataset while preserving</text><text class="s" x="43" y="265" font-size="11.5" fill="#7A8BBE">signal structure.</text>
+<rect x="305" y="167" width="270" height="132" rx="10" fill="#0C1030" stroke="#182050"/>
+<g class="hl" style="animation-delay:4s"><rect x="305" y="167" width="270" height="132" rx="10" fill="#00CFFF" fill-opacity=".05" stroke="#00CFFF"/><rect x="305" y="177" width="3" height="112" fill="url(#acc)"/></g>
+<text class="m" x="323" y="191" font-size="10.5" fill="#00CFFF" fill-opacity=".8">STEP 05</text>
+<text class="s" x="323" y="213" font-size="13.5" font-weight="600" fill="#FFFFFF">Log-Variance Feature</text><text class="s" x="323" y="231" font-size="13.5" font-weight="600" fill="#FFFFFF">Extraction</text><text class="s" x="323" y="251" font-size="11.5" fill="#7A8BBE">Compute log(Var+ε) per band per trial. Log</text><text class="s" x="323" y="267" font-size="11.5" fill="#7A8BBE">transform linearizes exponential power</text><text class="s" x="323" y="283" font-size="11.5" fill="#7A8BBE">relationships.</text>
+<rect x="585" y="167" width="270" height="132" rx="10" fill="#0C1030" stroke="#182050"/>
+<g class="hl" style="animation-delay:5s"><rect x="585" y="167" width="270" height="132" rx="10" fill="#00CFFF" fill-opacity=".05" stroke="#00CFFF"/><rect x="585" y="177" width="3" height="112" fill="url(#acc)"/></g>
+<text class="m" x="603" y="191" font-size="10.5" fill="#00CFFF" fill-opacity=".8">STEP 06</text>
+<text class="s" x="603" y="213" font-size="13.5" font-weight="600" fill="#FFFFFF">11×11 Matrix Spanning</text><text class="s" x="603" y="233" font-size="11.5" fill="#7A8BBE">Tile 5 log-variance features into 121-slot</text><text class="s" x="603" y="249" font-size="11.5" fill="#7A8BBE">grid. Scale Beta ×1.5 along primary</text><text class="s" x="603" y="265" font-size="11.5" fill="#7A8BBE">diagonal for emphasis.</text>
+<rect x="25" y="309" width="270" height="132" rx="10" fill="#0C1030" stroke="#182050"/>
+<g class="hl" style="animation-delay:6s"><rect x="25" y="309" width="270" height="132" rx="10" fill="#00CFFF" fill-opacity=".05" stroke="#00CFFF"/><rect x="25" y="319" width="3" height="112" fill="url(#acc)"/></g>
+<text class="m" x="43" y="333" font-size="10.5" fill="#00CFFF" fill-opacity=".8">STEP 07</text>
+<text class="s" x="43" y="355" font-size="13.5" font-weight="600" fill="#FFFFFF">StandardScaler + SelectKBest +</text><text class="s" x="43" y="373" font-size="13.5" font-weight="600" fill="#FFFFFF">PCA</text><text class="s" x="43" y="393" font-size="11.5" fill="#7A8BBE">Z-normalize → top 50 ANOVA F-test features</text><text class="s" x="43" y="409" font-size="11.5" fill="#7A8BBE">→ 25 principal components for LDA</text><text class="s" x="43" y="425" font-size="11.5" fill="#7A8BBE">stability.</text>
+<rect x="305" y="309" width="270" height="132" rx="10" fill="#0C1030" stroke="#182050"/>
+<g class="hl" style="animation-delay:7s"><rect x="305" y="309" width="270" height="132" rx="10" fill="#00CFFF" fill-opacity=".05" stroke="#00CFFF"/><rect x="305" y="319" width="3" height="112" fill="url(#acc)"/></g>
+<text class="m" x="323" y="333" font-size="10.5" fill="#00CFFF" fill-opacity=".8">STEP 08</text>
+<text class="s" x="323" y="355" font-size="13.5" font-weight="600" fill="#FFFFFF">GridSearchCV LDA</text><text class="s" x="323" y="373" font-size="13.5" font-weight="600" fill="#FFFFFF">Classification</text><text class="s" x="323" y="393" font-size="11.5" fill="#7A8BBE">Exhaustive search: {lsqr|eigen} ×</text><text class="s" x="323" y="409" font-size="11.5" fill="#7A8BBE">{auto|None shrinkage}. Manual 5-formula</text><text class="s" x="323" y="425" font-size="11.5" fill="#7A8BBE">fallback for full transparency.</text>
+<rect x="585" y="309" width="270" height="132" rx="10" fill="#0C1030" stroke="#182050"/>
+<g class="hl" style="animation-delay:8s"><rect x="585" y="309" width="270" height="132" rx="10" fill="#00CFFF" fill-opacity=".05" stroke="#00CFFF"/><rect x="585" y="319" width="3" height="112" fill="url(#acc)"/></g>
+<text class="m" x="603" y="333" font-size="10.5" fill="#00CFFF" fill-opacity=".8">STEP 09</text>
+<text class="s" x="603" y="355" font-size="13.5" font-weight="600" fill="#FFFFFF">Weights Export + Telemetry</text><text class="s" x="603" y="373" font-size="13.5" font-weight="600" fill="#FFFFFF">Deployment</text><text class="s" x="603" y="393" font-size="11.5" fill="#7A8BBE">Serialize w and w₀ to JSON. Deploy at 8 Hz</text><text class="s" x="603" y="409" font-size="11.5" fill="#7A8BBE">(0.125s ticks), clamping β power to 5–45</text><text class="s" x="603" y="425" font-size="11.5" fill="#7A8BBE">μV².</text>
+</svg>

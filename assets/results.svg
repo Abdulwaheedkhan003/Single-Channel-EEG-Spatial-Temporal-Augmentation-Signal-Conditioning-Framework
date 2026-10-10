@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 440" width="880" height="440" role="img" aria-label="Results: 83.1% (60/40 split), 81.9% (70/30), 80.2% (80/20), 10-fold stratified cross-validation; confusion matrix 71/15/5/73; Nyquist criterion satisfied at 256 Hz">
+<title>Results: 83.1% (60/40 split), 81.9% (70/30), 80.2% (80/20), 10-fold stratified cross-validation; confusion matrix 71/15/5/73; Nyquist criterion satisfied at 256 Hz</title>
+<style>.s{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif}.m{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+.shim{animation:shim 2.5s linear infinite}@keyframes shim{from{transform:translateX(-200px)}to{transform:translateX(200px)}}
+.pop{opacity:0;animation:pop .8s ease forwards}@keyframes pop{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}</style>
+<rect width="880" height="440" rx="14" fill="#010210"/>
+<defs><clipPath id="rc0"><rect x="25.0" y="25" width="200" height="132" rx="12"/></clipPath>
+<linearGradient id="rg0" x1="0" x2="1"><stop offset="0" stop-color="#00F5A0" stop-opacity="0"/><stop offset=".5" stop-color="#00F5A0"/><stop offset="1" stop-color="#00F5A0" stop-opacity="0"/></linearGradient></defs>
+<rect x="25.0" y="25" width="200" height="132" rx="12" fill="#0C1030" stroke="#182050"/>
+<g clip-path="url(#rc0)"><g transform="translate(25.0 155)"><rect class="shim" style="animation-delay:0.0s" width="200" height="2" fill="url(#rg0)"/></g></g>
+<g class="pop" style="animation-delay:0.00s"><text class="s" x="125.0" y="91" text-anchor="middle" font-size="42" font-weight="700" fill="#FFFFFF">83.1<tspan font-size="26" fill="#00F5A0">%</tspan></text></g>
+<text class="s" x="125.0" y="117" text-anchor="middle" font-size="10.5" letter-spacing="1" fill="#7A8BBE">60 / 40 SPLIT</text>
+<text class="m" x="125.0" y="135" text-anchor="middle" font-size="10.5" fill="#00F5A0">Peak Test Accuracy</text>
+<defs><clipPath id="rc1"><rect x="235.0" y="25" width="200" height="132" rx="12"/></clipPath>
+<linearGradient id="rg1" x1="0" x2="1"><stop offset="0" stop-color="#8B5CF6" stop-opacity="0"/><stop offset=".5" stop-color="#8B5CF6"/><stop offset="1" stop-color="#8B5CF6" stop-opacity="0"/></linearGradient></defs>
+<rect x="235.0" y="25" width="200" height="132" rx="12" fill="#0C1030" stroke="#182050"/>
+<g clip-path="url(#rc1)"><g transform="translate(235.0 155)"><rect class="shim" style="animation-delay:0.4s" width="200" height="2" fill="url(#rg1)"/></g></g>
+<g class="pop" style="animation-delay:0.15s"><text class="s" x="335.0" y="91" text-anchor="middle" font-size="42" font-weight="700" fill="#FFFFFF">81.9<tspan font-size="26" fill="#8B5CF6">%</tspan></text></g>
+<text class="s" x="335.0" y="117" text-anchor="middle" font-size="10.5" letter-spacing="1" fill="#7A8BBE">70 / 30 SPLIT</text>
+<text class="m" x="335.0" y="135" text-anchor="middle" font-size="10.5" fill="#8B5CF6">Test Accuracy</text>
+<defs><clipPath id="rc2"><rect x="445.0" y="25" width="200" height="132" rx="12"/></clipPath>
+<linearGradient id="rg2" x1="0" x2="1"><stop offset="0" stop-color="#FFB800" stop-opacity="0"/><stop offset=".5" stop-color="#FFB800"/><stop offset="1" stop-color="#FFB800" stop-opacity="0"/></linearGradient></defs>
+<rect x="445.0" y="25" width="200" height="132" rx="12" fill="#0C1030" stroke="#182050"/>
+<g clip-path="url(#rc2)"><g transform="translate(445.0 155)"><rect class="shim" style="animation-delay:0.8s" width="200" height="2" fill="url(#rg2)"/></g></g>
+<g class="pop" style="animation-delay:0.30s"><text class="s" x="545.0" y="91" text-anchor="middle" font-size="42" font-weight="700" fill="#FFFFFF">80.2<tspan font-size="26" fill="#FFB800">%</tspan></text></g>
+<text class="s" x="545.0" y="117" text-anchor="middle" font-size="10.5" letter-spacing="1" fill="#7A8BBE">80 / 20 SPLIT</text>
+<text class="m" x="545.0" y="135" text-anchor="middle" font-size="10.5" fill="#FFB800">Test Accuracy</text>
+<defs><clipPath id="rc3"><rect x="655.0" y="25" width="200" height="132" rx="12"/></clipPath>
+<linearGradient id="rg3" x1="0" x2="1"><stop offset="0" stop-color="#00CFFF" stop-opacity="0"/><stop offset=".5" stop-color="#00CFFF"/><stop offset="1" stop-color="#00CFFF" stop-opacity="0"/></linearGradient></defs>
+<rect x="655.0" y="25" width="200" height="132" rx="12" fill="#0C1030" stroke="#182050"/>
+<g clip-path="url(#rc3)"><g transform="translate(655.0 155)"><rect class="shim" style="animation-delay:1.2s" width="200" height="2" fill="url(#rg3)"/></g></g>
+<g class="pop" style="animation-delay:0.45s"><text class="s" x="755.0" y="91" text-anchor="middle" font-size="42" font-weight="700" fill="#FFFFFF">10<tspan font-size="26" fill="#00CFFF">-fold</tspan></text></g>
+<text class="s" x="755.0" y="117" text-anchor="middle" font-size="10.5" letter-spacing="1" fill="#7A8BBE">CROSS-VALIDATION</text>
+<text class="m" x="755.0" y="135" text-anchor="middle" font-size="10.5" fill="#00CFFF">Stratified K-Fold</text>
+<text class="m" x="25" y="198" font-size="12" fill="#7A8BBE">Confusion Matrix — 60/40 Split (83.1%)</text>
+<text class="m" x="114" y="228" text-anchor="middle" font-size="10.5" fill="#7A8BBE">Pred: Left</text>
+<text class="m" x="205" y="228" text-anchor="middle" font-size="10.5" fill="#7A8BBE">Pred: Right</text>
+<text class="m" transform="translate(56 282) rotate(-90)" text-anchor="middle" font-size="10.5" fill="#7A8BBE">Left</text>
+<text class="m" transform="translate(56 373) rotate(-90)" text-anchor="middle" font-size="10.5" fill="#7A8BBE">Right</text>
+<rect x="70" y="238" width="88" height="88" rx="7" fill="#00F5A0" fill-opacity=".11" stroke="#00F5A0" stroke-opacity=".3"/>
+<text class="s" x="114" y="288" text-anchor="middle" font-size="27" font-weight="700" fill="#00F5A0">71</text>
+<text class="m" x="114" y="305" text-anchor="middle" font-size="9.5" fill="#00F5A0" fill-opacity=".6">TP</text><rect x="161" y="238" width="88" height="88" rx="7" fill="#FF5F77" fill-opacity=".11" stroke="#FF5F77" stroke-opacity=".3"/>
+<text class="s" x="205" y="288" text-anchor="middle" font-size="27" font-weight="700" fill="#FF5F77">15</text>
+<text class="m" x="205" y="305" text-anchor="middle" font-size="9.5" fill="#FF5F77" fill-opacity=".6">FP</text><rect x="70" y="329" width="88" height="88" rx="7" fill="#FF5F77" fill-opacity=".11" stroke="#FF5F77" stroke-opacity=".3"/>
+<text class="s" x="114" y="379" text-anchor="middle" font-size="27" font-weight="700" fill="#FF5F77">5</text>
+<text class="m" x="114" y="396" text-anchor="middle" font-size="9.5" fill="#FF5F77" fill-opacity=".6">FN</text><rect x="161" y="329" width="88" height="88" rx="7" fill="#00F5A0" fill-opacity=".11" stroke="#00F5A0" stroke-opacity=".3"/>
+<text class="s" x="205" y="379" text-anchor="middle" font-size="27" font-weight="700" fill="#00F5A0">73</text>
+<text class="m" x="205" y="396" text-anchor="middle" font-size="9.5" fill="#00F5A0" fill-opacity=".6">TN</text>
+<rect x="330" y="180" width="525" height="235" rx="10" fill="#0C1030" stroke="#182050"/>
+<text class="m" x="352" y="210" font-size="12" fill="#7A8BBE">Nyquist Criterion Verification</text>
+<text class="m" xml:space="preserve" x="352" y="242" font-size="12.5"><tspan fill="#7A8BBE">Highest tracked frequency: </tspan><tspan fill="#00CFFF">80 Hz (Gamma)</tspan></text>
+<text class="m" xml:space="preserve" x="352" y="263" font-size="12.5"><tspan fill="#7A8BBE">Required Nyquist:          </tspan><tspan fill="#D4DEFF">≥ 160 Hz</tspan></text>
+<text class="m" xml:space="preserve" x="352" y="284" font-size="12.5"><tspan fill="#7A8BBE">Sampling rate:             </tspan><tspan fill="#00F5A0">256 Hz &gt; 160 Hz → SATISFIED ✓</tspan></text>
+<text class="m" xml:space="preserve" x="352" y="326" font-size="12.5"><tspan fill="#7A8BBE">Samples per wave cycle at 256 Hz:</tspan></text>
+<text class="m" xml:space="preserve" x="352" y="347" font-size="12.5"><tspan fill="#00CFFF">Delta </tspan><tspan fill="#D4DEFF">(0.5–4 Hz):  </tspan><tspan fill="#7A8BBE">64 – 512 pts</tspan></text>
+<text class="m" xml:space="preserve" x="352" y="368" font-size="12.5"><tspan fill="#00CFFF">Beta  </tspan><tspan fill="#D4DEFF">(12–30 Hz):  </tspan><tspan fill="#7A8BBE">8.5 – 21.3 pts</tspan></text>
+<text class="m" xml:space="preserve" x="352" y="389" font-size="12.5"><tspan fill="#00CFFF">Gamma </tspan><tspan fill="#D4DEFF">(30–80 Hz):  </tspan><tspan fill="#7A8BBE">3.2 – 8.5 pts</tspan></text>
+</svg>
